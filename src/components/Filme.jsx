@@ -76,7 +76,7 @@ export default function Filme({ titulo, imagem, nota, sinopse }) {
         className={`${
           virado
             ? "hidden"
-            : "z-40 group/edit p-4 text-white absolute top-1 left-1 flex items-center"
+            : "z-30 group/edit p-4 text-white absolute top-1 left-1 flex items-center"
         }`}
       >
         {jaAdicionado ? <Trash size={30} /> : <Plus size={30} />}
@@ -89,7 +89,7 @@ export default function Filme({ titulo, imagem, nota, sinopse }) {
         onClick={virarCard}
         className={`${
           virado ? "translate-y-[-110%] absolute" : "relative"
-        }  card flip-card h-[550px] overflow-hidden hover:bg-black transition duration-200 cursor-pointer bg-stone-900 text-white p-4 rounded-lg shadow-lg`}
+        }  card flip-card h-[500px] w-[100%]  hover:bg-black transition duration-200 cursor-pointer bg-stone-900 text-white p-4 rounded-lg `}
       >
         <div className="relative">
           <img
@@ -98,10 +98,12 @@ export default function Filme({ titulo, imagem, nota, sinopse }) {
             className="rounded-md w-full"
           />
         </div>
-        <h2 className="text-lg font-bold mt-2">{titulo}</h2>
-        <div className="flex justify-between items-center">
-          {estrelas()}
-          <h2 className="text-lg font-bold mt-2">{nota.toFixed(1)}</h2>
+        <div className="flex flex-col justify-between">
+          <h2 className="text-lg font-bold mt-2">{titulo}</h2>
+          <div className="flex justify-between items-center">
+            {estrelas()}
+            <h2 className="text-lg font-bold mt-2">{nota.toFixed(1)}</h2>
+          </div>
         </div>
       </div>
 
@@ -110,14 +112,14 @@ export default function Filme({ titulo, imagem, nota, sinopse }) {
         onClick={virarCard}
         className={`${
           virado ? "relative" : "translate-y-[110%] absolute "
-        } card h-[550px] overflow-hidden hover:bg-red-950 transition duration-200 cursor-pointer bg-red-900 text-white p-4 rounded-lg shadow-lg`}
+        } card h-[500px]  hover:bg-red-950 transition duration-200 cursor-pointer bg-red-900 text-white p-4 rounded-lg shadow-lg`}
       >
         <h2 className="text-lg font-bold mt-2">{titulo}</h2>
         <div className="flex justify-between items-center">
           {estrelas()}
           <h2 className="text-lg font-bold mt-2">{nota.toFixed(1)}</h2>
         </div>
-        <div className="text-lg mt-4">
+        <div className="text-sm mt-4">
           <p>{sinopse}</p>
         </div>
       </div>
