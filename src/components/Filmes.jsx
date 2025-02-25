@@ -1,56 +1,82 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Titulo from "./Titulo1";
 import Filme from "./Filme";
 import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-
 import "swiper/css";
 import "swiper/css/navigation";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsRightIcon,
-} from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 export default function Filmes({ idGenero, titulo, idDiv }) {
   const [filmes, setFilmes] = useState([]);
   const [buscando, setBuscando] = useState(true);
   const [slidePerView, setSlidePerView] = useState(6);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [slidePerGroup, setSlidePerGroup] = useState(4);
+  const swiperRef = useRef(null);
 
   useEffect(() => {
-    const buscarFilmes = async () => {
-      setBuscando(true);
-      try {
-        const response = await axios.get(
-          "https://api.themoviedb.org/3/discover/movie",
-          {
-            headers: {
-              accept: "application/json",
-              Authorization:
-                "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjOWZiMjIyYTQzODU3NGE2ZTBhYWJjOWU2YWRjNWQxNyIsIm5iZiI6MTczOTgxMDMzMC4yMzUwMDAxLCJzdWIiOiI2N2IzNjYxYTViOGM3ODllODQ5ZmI0NzciLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.QdyliiPc9YL_fTigia0b4nOHoL5Q-T3icJ0_CysusDo",
-            },
-            params: {
-              include_adult: false,
-              include_video: false,
-              language: "pt-BR",
-              page: 1,
-              sort_by: "popularity.desc",
-              with_genres: idGenero,
-            },
-          }
-        );
+    const handleResize = () => {
+      let newSlides = 6;
+      let newGroup = 4;
 
-        setFilmes(response.data.results);
-      } catch (error) {
-        console.error("Erro ao buscar filmes:", error);
+      if (window.innerWidth < 640) {
+        newSlides = 2;
+        newGroup = 2;
+      } else if (window.innerWidth < 800) {
+        newSlides = 4;
+        newGroup = 2;
       }
 
-      setBuscando(false);
+      setSlidePerView(newSlides);
+      setSlidePerGroup(newGroup);
+      setActiveIndex(0); // Reseta o índice ativo ao mudar o tamanho da tela
+
+      if (swiperRef.current) {
+        swiperRef.current.slideTo(0); // Faz o Swiper voltar ao primeiro slide
+        swiperRef.current.update(); // Atualiza o Swiper para recalcular os índices visíveis
+      }
     };
 
-    buscarFilmes();
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const buscarFilmes = async () => {
+    try {
+      const response = await axios.get(
+        "https://api.themoviedb.org/3/discover/movie",
+        {
+          headers: {
+            accept: "application/json",
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1NWUzYzc5OTFlNGMxYjFjOWYwMWY0ZWQ2YTNkZDU3NiIsIm5iZiI6MTczOTgxMDMzMC4yMzUwMDAxLCJzdWIiOiI2N2IzNjYxYTViOGM3ODllODQ5ZmI0NzciLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.IHMFBBmzz-vpFO8OMAb5h8CTS9hT5w5Ncdl-p1skcq8",
+          },
+          params: {
+            include_adult: false,
+            include_video: false,
+            language: "pt-BR",
+            page: 1,
+            sort_by: "popularity.desc",
+            with_genres: idGenero,
+          },
+        }
+      );
+
+      setFilmes(response.data.results);
+    } catch (error) {
+      console.error("Erro ao buscar filmes:", error);
+    }
+    setBuscando(false);
+  };
+
+  useEffect(() => {
+    buscarFilmes(true);
   }, [idGenero]);
 
   const isFirstSlideVisible = activeIndex === 0;
@@ -63,7 +89,7 @@ export default function Filmes({ idGenero, titulo, idDiv }) {
   ) : (
     <div
       id={idDiv}
-      className=" text-white relative flex flex-col  justify-center min-w-screen bg-stone-700 mt-10 pb-20"
+      className="text-white relative flex flex-col justify-center min-w-screen bg-stone-700 mt-10 pb-20"
     >
       <Titulo text={titulo} />
 
@@ -72,9 +98,13 @@ export default function Filmes({ idGenero, titulo, idDiv }) {
           isFirstSlideVisible
             ? "hidden"
             : "absolute top-0 left-0 bg-gradient-to-r z-40 from-stone-700 to-stone/50 w-28 h-full flex items-center"
-        }`}
+        } ${slidePerView > 3 ? "" : "w-12 pointer-events-none"}`}
       >
-        <button className="absolute custom-prev">
+        <button
+          className={`absolute custom-prev-${idDiv} ${
+            slidePerView > 3 ? "" : "hidden"
+          }`}
+        >
           <div className="mx-4 bg-stone-900 rounded-md hover:bg-stone-950 transition duration-200">
             <ChevronLeftIcon size={64} />
           </div>
@@ -83,15 +113,16 @@ export default function Filmes({ idGenero, titulo, idDiv }) {
 
       <div>
         <Swiper
+          key={slidePerView}
           slidesPerView={slidePerView}
-          slidesPerGroup={4}
+          slidesPerGroup={slidePerGroup}
           spaceBetween={10}
           navigation={{
-            nextEl: ".custom-next",
-            prevEl: ".custom-prev",
+            nextEl: `.custom-next-${idDiv}`,
+            prevEl: `.custom-prev-${idDiv}`,
           }}
           modules={[Navigation]}
-          allowTouchMove={false}
+          allowTouchMove={slidePerView < 3}
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
         >
           {filmes.map((filme, index) => {
@@ -103,7 +134,8 @@ export default function Filmes({ idGenero, titulo, idDiv }) {
             const shouldBlur =
               (isFirstVisible || isLastVisible) &&
               !isFirstOverall &&
-              !isLastOverall;
+              !isLastOverall &&
+              slidePerView > 3;
 
             return (
               <SwiperSlide
@@ -129,9 +161,13 @@ export default function Filmes({ idGenero, titulo, idDiv }) {
           isLastSlideVisible
             ? "hidden"
             : "absolute right-0 top-0 bg-gradient-to-l z-40 from-stone-700 to-stone/50 w-28 h-full flex items-center"
-        }`}
+        } ${slidePerView > 3 ? "" : "w-12 pointer-events-none"}`}
       >
-        <button className="absolute custom-next">
+        <button
+          className={`absolute custom-next-${idDiv}  ${
+            slidePerView > 3 ? "" : "hidden"
+          }`}
+        >
           <div className="mx-4 bg-stone-900 rounded-md hover:bg-stone-950 transition duration-200">
             <ChevronRightIcon size={64} />
           </div>

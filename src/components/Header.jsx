@@ -1,6 +1,6 @@
 export default function Header() {
   return (
-    <header className="z-50 top-0 p-4 flex justify-around items-center bg-black w-full fixed text-white text-lg">
+    <header className="hidden z-50 top-0 p-4 sm:flex justify-around items-center bg-black w-full fixed text-white text-lg">
       <a href="#acao" className="hover:underline">
         Ação
       </a>
@@ -16,7 +16,7 @@ export default function Header() {
       <a href="#terror" className="hover:underline">
         Terror
       </a>
-      <a href="" className="hover:underline">
+      <a href="#minhalista" className="hover:underline">
         Minha lista
       </a>
     </header>
